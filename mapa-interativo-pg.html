@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mapa Interativo Pós Graduação</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CSS do Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- CSS do Leaflet.markercluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+  <style>
+    /* Make sure html and body take up full height and remove default margins */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    /* Set the map div to fill the full viewport */
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Importando as bibliotecas JavaScript -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+  <script>
+    // 1. Inicialização do mapa
+    var map = L.map('map').setView([20, 0], 3);
+
+    // 2. Adiciona a camada base (ex: OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // 3. Cria o grupo de clusters
+    var markers = L.markerClusterGroup();
+
+    // 4. Dados dos pontos com coordenadas (exemplo com alguns pontos)
+    var pontos = [
+	  {
+		institution: "African Research Health Institute",
+		city: "Durban",
+		country: "África do Sul",
+		url: "https://www.ahri.org/",
+		lat: -29.8587,
+		lng: 31.0218
+	  },
+	  {
+		institution: "University of KwaZulu-Natal",
+		city: "KwaZulu-Natal",
+		country: "África do Sul",
+		url: "https://ukzn.ac.za/",
+		lat: -29.8587,
+		lng: 31.0218
+	  },
+	  {
+		institution: "Göttingen Universität",
+		city: "Göttingen",
+		country: "Alemanha",
+		url: "https://www.uni-goettingen.de/",
+		lat: 51.5413,
+		lng: 9.9152
+	  },
+	  {
+		institution: "Heidelberg University",
+		city: "Heidelberg",
+		country: "Alemanha",
+		url: "https://www.uni-heidelberg.de/",
+		lat: 49.4094,
+		lng: 8.6943
+	  },
+	  {
+		institution: "Max Planck Institute for Plant Breeding",
+		city: "Cologne",
+		country: "Alemanha",
+		url: "https://www.mpipz.mpg.de/en",
+		lat: 50.9375,
+		lng: 6.9603
+	  },
+	  {
+		institution: "Hochschule Anhalt Univ Applied Sci",
+		city: "Dessau",
+		country: "Alemanha",
+		url: "https://www.hs-anhalt.de/en/life/dessau/campus.html",
+		lat: 51.8400,
+		lng: 12.2400
+	  },
+	  {
+		institution: "Johann Wolfgang Goethe - Univ",
+		city: "Frankfurt am Main",
+		country: "Alemanha",
+		url: "https://www.goethe-university-frankfurt.de/en",
+		lat: 50.1109,
+		lng: 8.6821
+	  },
+	  {
+		institution: "Kassel University",
+		city: "Kassel",
+		country: "Alemanha",
+		url: "https://www.uni-kassel.de/uni/en/",
+		lat: 51.3127,
+		lng: 9.4797
+	  },
+	  {
+		institution: "University of Cologne",
+		city: "Cologne",
+		country: "Alemanha",
+		url: "https://www.uni-koeln.de/en/",
+		lat: 50.9375,
+		lng: 6.9603
+	  },
+	  {
+		institution: "Friedrich Schiller Univ Jena",
+		city: "Jena",
+		country: "Alemanha",
+		url: "https://www.uni-jena.de/en",
+		lat: 50.9271,
+		lng: 11.5892
+	  },
+	  {
+		institution: "Universidad de Buenos Aires",
+		city: "Buenos Aires",
+		country: "Argentina",
+		url: "https://www.uba.ar/",
+		lat: -34.6037,
+		lng: -58.3816
+	  },
+	  {
+		institution: "Innsbruk University",
+		city: "Innsbruck",
+		country: "Áustria",
+		url: "https://www.uibk.ac.at/en/",
+		lat: 47.2692,
+		lng: 11.4041
+	  },
+	  {
+		institution: "University of Gent",
+		city: "Gent",
+		country: "Bélgica",
+		url: "https://www.ugent.be/en",
+		lat: 51.0543,
+		lng: 3.7174
+	  },
+	  {
+		institution: "Laval University",
+		city: "Quebec",
+		country: "Canadá",
+		url: "https://www.ulaval.ca/en",
+		lat: 46.8139,
+		lng: -71.2080
+	  },
+	  {
+		institution: "McGill University",
+		city: "Montreal",
+		country: "Canadá",
+		url: "https://www.mcgill.ca/",
+		lat: 45.5017,
+		lng: -73.5673
+	  },
+	  {
+		institution: "University Sherbrook",
+		city: "Sherbrooke",
+		country: "Canadá",
+		url: "https://www.usherbrooke.ca/",
+		lat: 45.4000,
+		lng: -71.9000
+	  },
+	  {
+		institution: "Universidad de Santiago",
+		city: "Santiago",
+		country: "Chile",
+		url: "https://www.usach.cl/",
+		lat: -33.4489,
+		lng: -70.6693
+	  },
+	  {
+		institution: "Universidad Tecnológica de Pereira",
+		city: "Pereira",
+		country: "Colômbia",
+		url: "https://www.utp.edu.co/",
+		lat: 4.8133,
+		lng: -75.6961
+	  },
+	  {
+		institution: "Pontificia Universidad Católica del Ecuador",
+		city: "Quito",
+		country: "Equador",
+		url: "https://www.puce.edu.ec/",
+		lat: -0.1807,
+		lng: -78.4678
+	  },
+	  {
+		institution: "Centro Nacional de Investig. Cardiovasc. Carlos II",
+		city: "Madrid",
+		country: "Espanha",
+		url: "https://www.cnic.es/",
+		lat: 40.4168,
+		lng: -3.7038
+	  },
+	  {
+		institution: "Estación Biológica de Doñana",
+		city: "Sevilha",
+		country: "Espanha",
+		url: "https://www.ebd.csic.es/",
+		lat: 37.3891,
+		lng: -5.9845
+	  },
+	  {
+		institution: "European Reference Network",
+		city: "Soria",
+		country: "Espanha",
+		url: "https://commission.europa.eu/index_en",
+		lat: 41.7600,
+		lng: -2.4689
+	  },
+	  {
+		institution: "Health Research Institute of Santiago de Compostela",
+		city: "Santiago de Compostela",
+		country: "Espanha",
+		url: "https://www.idisantiago.es/en/",
+		lat: 42.8806,
+		lng: -8.5457
+	  },
+	  {
+		institution: "Instituto de Agroquímica e Tecnologia de Alimentos",
+		city: "Valencia",
+		country: "Espanha",
+		url: "https://www.iata.csic.es/es",
+		lat: 39.4699,
+		lng: -0.3763
+	  },
+	  {
+		institution: "National Center for Biotechnology",
+		city: "Madrid",
+		country: "Espanha",
+		url: "https://www.csic.es/en/csic",
+		lat: 40.4168,
+		lng: -3.7038
+	  },
+	  {
+		institution: "Universidad de Sevilla",
+		city: "Sevilha",
+		country: "Espanha",
+		url: "https://www.us.es/",
+		lat: 37.3891,
+		lng: -5.9845
+	  },
+	  {
+		institution: "Universidade de Santiago de Compostela",
+		city: "Santiago de Compostela",
+		country: "Espanha",
+		url: "https://www.usc.gal/gl",
+		lat: 42.8806,
+		lng: -8.5457
+	  },
+	  {
+		institution: "Universitat Autònoma de Barcelona",
+		city: "Barcelona",
+		country: "Espanha",
+		url: "https://www.cragenomica.es/",
+		lat: 41.3851,
+		lng: 2.1734
+	  },
+	  {
+		institution: "Universitat Pompeu Fabra",
+		city: "Barcelona",
+		country: "Espanha",
+		url: "https://www.upf.edu/en/web/biomed",
+		lat: 41.3851,
+		lng: 2.1734
+	  },
+	  {
+		institution: "University of Oviedo",
+		city: "Oviedo",
+		country: "Espanha",
+		url: "https://www.uniovi.es/",
+		lat: 43.3619,
+		lng: -5.8494
+	  },
+	  {
+		institution: "Colorado State",
+		city: "Fort Collins",
+		country: "Estados Unidos",
+		url: "https://agsci.colostate.edu/soilcrop/",
+		lat: 40.5853,
+		lng: -105.0844
+	  },
+	  {
+		institution: "Connecticut College",
+		city: "New London (CT)",
+		country: "Estados Unidos",
+		url: "https://www.conncoll.edu/",
+		lat: 41.3557,
+		lng: -72.0994
+	  },
+	  {
+		institution: "Miami University",
+		city: "Miami (FL)",
+		country: "Estados Unidos",
+		url: "https://miamioh.edu/",
+		lat: 25.7617,
+		lng: -80.1918
+	  },
+	  {
+		institution: "Rensselaer Polytechnic Institute",
+		city: "Troy (NY)",
+		country: "Estados Unidos",
+		url: "https://www.rpi.edu/",
+		lat: 42.7284,
+		lng: -73.6918
+	  },
+	  {
+		institution: "Texas A&M University",
+		city: "College Station (TX)",
+		country: "Estados Unidos",
+		url: "https://www.tamu.edu/",
+		lat: 30.6279,
+		lng: -96.3344
+	  },
+	  {
+		institution: "Texas State University",
+		city: "Round Rock (TX)",
+		country: "Estados Unidos",
+		url: "https://www.txst.edu/",
+		lat: 30.5083,
+		lng: -97.6789
+	  },
+	  {
+		institution: "University of Notre Dame",
+		city: "Notre Dame (IN)",
+		country: "Estados Unidos",
+		url: "https://www.nd.edu/",
+		lat: 41.7020,
+		lng: -86.2394
+	  },
+	  {
+		institution: "University of Pittsburgh",
+		city: "Pittsburgh (PA)",
+		country: "Estados Unidos",
+		url: "https://www.pitt.edu/",
+		lat: 40.4406,
+		lng: -79.9959
+	  },
+	  {
+		institution: "University of Wisconsin-Madison",
+		city: "Madison (WI)",
+		country: "Estados Unidos",
+		url: "https://www.wisc.edu/",
+		lat: 43.0731,
+		lng: -89.4012
+	  },
+	  {
+		institution: "Louisiana State University",
+		city: "Baton Rouge (LA)",
+		country: "Estados Unidos",
+		url: "https://www.lsu.edu/",
+		lat: 30.4515,
+		lng: -91.1871
+	  },
+	  {
+		institution: "Michigan State University",
+		city: "East Lansing (MI)",
+		country: "Estados Unidos",
+		url: "https://msu.edu/",
+		lat: 42.7369,
+		lng: -84.4839
+	  },
+	  {
+		institution: "The State University of New Jersey",
+		city: "New Brunswick (NJ)",
+		country: "Estados Unidos",
+		url: "https://www.rutgers.edu/",
+		lat: 40.4862,
+		lng: -74.4518
+	  },
+	  {
+		institution: "United States Department of Agriculture",
+		city: "Washington (DC)",
+		country: "Estados Unidos",
+		url: "https://www.usda.gov/",
+		lat: 38.9072,
+		lng: -77.0369
+	  },
+	  {
+		institution: "University of California",
+		city: "San Diego (CA)",
+		country: "Estados Unidos",
+		url: "https://ucsd.edu/",
+		lat: 32.7157,
+		lng: -117.1611
+	  },
+	  {
+		institution: "University of Nevada, Reno",
+		city: "Reno (NV)",
+		country: "Estados Unidos",
+		url: "https://www.unr.edu/",
+		lat: 39.5296,
+		lng: -119.8138
+	  },
+	  {
+		institution: "University of Virginia",
+		city: "Charlottesville",
+		country: "Estados Unidos",
+		url: "https://bio.as.virginia.edu/",
+		lat: 38.0293,
+		lng: -78.4767
+	  },
+	  {
+		institution: "Broad Institute of MIT and Harvard",
+		city: "Cambridge (MA)",
+		country: "Estados Unidos",
+		url: "https://www.broadinstitute.org/",
+		lat: 42.3736,
+		lng: -71.1097
+	  },
+	  {
+		institution: "University of Maryland, School of Medicine",
+		city: "Baltimore (MD)",
+		country: "Estados Unidos",
+		url: "https://www.igs.umaryland.edu/",
+		lat: 39.2904,
+		lng: -76.6122
+	  },
+	  {
+		institution: "Centre National de Recherche Scientifique",
+		city: "Strasbourg",
+		country: "França",
+		url: "https://www.alsace.cnrs.fr/fr",
+		lat: 48.5734,
+		lng: 7.7521
+	  },
+	  {
+		institution: "Institut National de la Recherche Agronomique",
+		city: "Toulouse",
+		country: "França",
+		url: "https://www.inrae.fr/centres/occitanie-toulouse",
+		lat: 43.6047,
+		lng: 1.4442
+	  },
+	  {
+		institution: "University of Paris Est",
+		city: "Paris",
+		country: "França",
+		url: "https://www.en.u-pec.fr/",
+		lat: 48.8566,
+		lng: 2.3522
+	  },
+	  {
+		institution: "University of Paris-Sud",
+		city: "Paris",
+		country: "França",
+		url: "https://www.universite-paris-saclay.fr/en",
+		lat: 48.8566,
+		lng: 2.3522
+	  },
+	  {
+		institution: "University Medical Center Groningen",
+		city: "Groningen",
+		country: "Holanda",
+		url: "https://www.umcg.nl/",
+		lat: 53.2194,
+		lng: 6.5665
+	  },
+	  {
+		institution: "Delhi University",
+		city: "New Delhi",
+		country: "Índia",
+		url: "https://www.du.ac.in/",
+		lat: 28.6139,
+		lng: 77.2090
+	  },
+	  {
+		institution: "American University of Iraq",
+		city: "Baghdad",
+		country: "Iraque",
+		url: "https://auib.edu.iq/",
+		lat: 33.3128,
+		lng: 44.3615
+	  },
+	  {
+		institution: "University of Trieste",
+		city: "Trieste",
+		country: "Itália",
+		url: "https://portale.units.it/en",
+		lat: 45.6495,
+		lng: 13.7768
+	  },
+	  {
+		institution: "Policlinico Cà Granda",
+		city: "Milão",
+		country: "Itália",
+		url: "https://www.policlinico.mi.it/en/homepage",
+		lat: 45.4642,
+		lng: 9.1900
+	  },
+	  {
+		institution: "Istitute di Tumori Regina Elena",
+		city: "Roma",
+		country: "Itália",
+		url: "https://www.reteneuroscienze.it/en/",
+		lat: 41.9028,
+		lng: 12.4964
+	  },
+	  {
+		institution: "Istituto Zooprofilattico Sperimentale Venezie",
+		city: "Legnaro",
+		country: "Itália",
+		url: "https://www.izsvenezie.it/",
+		lat: 45.3500,
+		lng: 11.8500
+	  },
+	  {
+		institution: "Maternal and Child Health Burlo Garofolo",
+		city: "Trieste",
+		country: "Itália",
+		url: "http://www.burlo.trieste.it/",
+		lat: 45.6495,
+		lng: 13.7768
+	  },
+	  {
+		institution: "Università degli Studi di Milano",
+		city: "Milão",
+		country: "Itália",
+		url: "https://www.unimi.it/en",
+		lat: 45.4642,
+		lng: 9.1900
+	  },
+	  {
+		institution: "Tohoku University, Life Sciences",
+		city: "Sendai",
+		country: "Japão",
+		url: "https://www.lifesci.tohoku.ac.jp/en/",
+		lat: 38.2682,
+		lng: 140.8694
+	  },
+	  {
+		institution: "Luxembourg Institute of Science and Technology",
+		city: "Luxemburgo",
+		country: "Luxemburgo",
+		url: "https://www.list.lu/",
+		lat: 49.6116,
+		lng: 6.1319
+	  },
+	  {
+		institution: "University of Swat",
+		city: "Charbagh",
+		country: "Paquistão",
+		url: "https://uswat.edu.pk/",
+		lat: 35.2220,
+		lng: 72.4250
+	  },
+	  {
+		institution: "Instituto de Investigação e Inovação em Saúde i3S",
+		city: "Porto",
+		country: "Portugal",
+		url: "https://www.i3s.up.pt/",
+		lat: 41.1579,
+		lng: -8.6291
+	  },
+	  {
+		institution: "Instituto Gulbenkian de Ciência e Centro Investig.",
+		city: "Oeiras",
+		country: "Portugal",
+		url: "https://ciencia.ucp.pt/pt/",
+		lat: 38.6979,
+		lng: -9.2656
+	  },
+	  {
+		institution: "Universidade do Minho",
+		city: "Braga",
+		country: "Portugal",
+		url: "https://www.uminho.pt/PT/uminho",
+		lat: 41.5503,
+		lng: -8.4201
+	  },
+	  {
+		institution: "Universidade Lusófona de Humanidades e Tecnologias",
+		city: "Lisboa",
+		country: "Portugal",
+		url: "https://www.ulusofona.pt/",
+		lat: 38.7223,
+		lng: -9.1393
+	  },
+	  {
+		institution: "Universidade Nova de Lisboa",
+		city: "Oeiras",
+		country: "Portugal",
+		url: "https://www.itqb.unl.pt/",
+		lat: 38.6979,
+		lng: -9.2656
+	  },
+	  {
+		institution: "Qatar University",
+		city: "Doha",
+		country: "Qatar",
+		url: "https://www.qu.edu.qa/en-us/",
+		lat: 25.2854,
+		lng: 51.5310
+	  },
+	  {
+		institution: "University of Edinburgh, Centre for Inflammation Res",
+		city: "Edinburgh",
+		country: "Reino Unido",
+		url: "https://www.ed.ac.uk/",
+		lat: 55.9533,
+		lng: -3.1883
+	  },
+	  {
+		institution: "Imperial College of London",
+		city: "Londres",
+		country: "Reino Unido",
+		url: "https://www.imperial.ac.uk/",
+		lat: 51.5074,
+		lng: -0.1278
+	  },
+	  {
+		institution: "Newcastle University",
+		city: "Newcastle",
+		country: "Reino Unido",
+		url: "https://www.ncl.ac.uk/",
+		lat: 54.9783,
+		lng: -1.6178
+	  },
+	  {
+		institution: "Queen Mary University of London",
+		city: "Londres",
+		country: "Reino Unido",
+		url: "https://www.qmul.ac.uk/",
+		lat: 51.5074,
+		lng: -0.1278
+	  },
+	  {
+		institution: "University College London",
+		city: "Londres",
+		country: "Reino Unido",
+		url: "https://www.ucl.ac.uk/",
+		lat: 51.5074,
+		lng: -0.1278
+	  },
+	  {
+		institution: "University of Cambridge",
+		city: "Cambridge",
+		country: "Reino Unido",
+		url: "https://www.cam.ac.uk/",
+		lat: 52.2053,
+		lng: 0.1218
+	  },
+	  {
+		institution: "University of Dundee",
+		city: "Dundee",
+		country: "Reino Unido",
+		url: "https://www.dundee.ac.uk/",
+		lat: 56.4620,
+		lng: -2.9707
+	  },
+	  {
+		institution: "2Czech Academy of Sciences",
+		city: "Brno",
+		country: "República Checa",
+		url: "https://www.ivb.cz/en/",
+		lat: 49.1951,
+		lng: 16.6068
+	  },
+	  {
+		institution: "Charles University",
+		city: "Praga",
+		country: "República Tcheca",
+		url: "https://cuni.cz/UK-1.html",
+		lat: 50.0755,
+		lng: 14.4378
+	  },
+	  {
+		institution: "Universidad de la República, Agronomía",
+		city: "Montevidéu",
+		country: "Uruguai",
+		url: "https://udelar.edu.uy/portal/",
+		lat: -34.9011,
+		lng: -56.1645
+	  },
+	  {
+		institution: "Institut Pasteur de Montevideo",
+		city: "Montevidéu",
+		country: "Uruguai",
+		url: "https://pasteur.uy/en/",
+		lat: -34.9011,
+		lng: -56.1645
+	  }
+	];
+
+
+    // 5. Loop para adicionar os marcadores com clustering
+    pontos.forEach(function(ponto) {
+      // Cria o conteúdo do popup para cada marcador
+      var popupContent = "<strong>" + ponto.institution + "</strong><br>" +
+                         ponto.city + ", " + ponto.country + "<br>" +
+                         "<a href='" + ponto.url + "' target='_blank'>Site</a>";
+      
+      // Cria o marcador e associa o popup
+      var marker = L.marker([ponto.lat, ponto.lng]).bindPopup(popupContent);
+      
+      // Adiciona o marcador ao grupo de clusters
+      markers.addLayer(marker);
+    });
+
+    // 6. Adiciona o grupo de marcadores (com clustering) ao mapa
+    map.addLayer(markers);
+  </script>
+</body>
+</html>
