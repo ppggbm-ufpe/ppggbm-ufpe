@@ -1,1 +1,193 @@
-<h1>Egressos Mapa Interativo</h1>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Instituições - PPGGBM UFPE</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        .info-box {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        .info-box h4 {
+            margin: 0 0 5px;
+            color: #777;
+        }
+        .legend {
+            text-align: left;
+            line-height: 18px;
+            color: #555;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([-8.0476, -34.8770], 3); // Centered on Recife
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Define marker colors based on country
+        function getMarkerColor(country) {
+            if (country === 'Brasil') return '#1e88e5'; // blue
+            return '#e53935'; // red for international
+        }
+
+        // Function to create a custom icon based on the country
+        function createIcon(country) {
+            return L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: ${getMarkerColor(country)}; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;"></div>`,
+                iconSize: [15, 15],
+                iconAnchor: [7, 7]
+            });
+        }
+
+        // Data
+        const locations = [
+            { city: "Besfast", state: "", country: "Irlanda do Norte", institution: "Queen's University Belfast", lat: 54.5844, lng: -5.9324 },
+            { city: "Cali", state: "", country: "Colômbia", institution: "Universidad ICESI", lat: 3.3427, lng: -76.5298 },
+            { city: "Ghent", state: "", country: "Bélgica", institution: "Vib & Elixir-Be", lat: 51.0543, lng: 3.7174 },
+            { city: "Hamilton", state: "", country: "EUA", institution: "Nat. Instit. Allergy and Infectious Diseases", lat: 39.1834, lng: -84.5829 },
+            { city: "Heidelberg", state: "", country: "Alemanha", institution: "German Cancer Research Center", lat: 49.3988, lng: 8.6724 },
+            { city: "Londres", state: "", country: "Reino Unido", institution: "Oxford University", lat: 51.5074, lng: -0.1278 },
+            { city: "Londres", state: "", country: "Reino Unido", institution: "King's College London", lat: 51.5115, lng: -0.1160 },
+            { city: "Marburg", state: "", country: "Alemanha", institution: "CSL Innovation GmbH", lat: 50.8021, lng: 8.7724 },
+            { city: "Neu-Ulm", state: "", country: "Alemanha", institution: "NUVISAN Pharma Services", lat: 48.3949, lng: 10.0090 },
+            { city: "Tartu", state: "", country: "Estônia", institution: "Tartu Ülikool Maakond", lat: 58.3780, lng: 26.7290 },
+            { city: "Trieste", state: "", country: "Itália", institution: "IRCCS Burlo Garofolo", lat: 45.6495, lng: 13.7768 },
+            // Brasil
+            { city: "Arapiraca", state: "AL", country: "Brasil", institution: "UNINASSAU Univers. Maurício de Nassau", lat: -9.7530, lng: -36.6613 },
+            { city: "Maceió", state: "AL", country: "Brasil", institution: "Centro Universit. CESMAC", lat: -9.6658, lng: -35.7350 },
+            { city: "Manaus", state: "AM", country: "Brasil", institution: "Inst. Nac. Pesq. Amazônia - INPE", lat: -3.1190, lng: -60.0217 },
+            { city: "Jacobina", state: "BA", country: "Brasil", institution: "Faculd. AGES de Medicina", lat: -11.1807, lng: -40.5130 },
+            { city: "Juazeiro", state: "BA", country: "Brasil", institution: "UNEB, Univers. Estad. Bahia", lat: -9.4121, lng: -40.5003 },
+            { city: "Salvador", state: "BA", country: "Brasil", institution: "Colégio Antonio de Pádua", lat: -12.9714, lng: -38.5014 },
+            { city: "Fortaleza", state: "CE", country: "Brasil", institution: "Centro Hemoterapia Ceará HEMOCE", lat: -3.7319, lng: -38.5267 },
+            { city: "Juazeiro do Norte", state: "CE", country: "Brasil", institution: "Faculd. Estácio de Juazeiro", lat: -7.2131, lng: -39.3150 },
+            { city: "Brasília", state: "DF", country: "Brasil", institution: "INCA", lat: -15.7801, lng: -47.9292 },
+            { city: "Belo Horizonte", state: "MG", country: "Brasil", institution: "UFMG", lat: -19.9227, lng: -43.9451 },
+            { city: "Pouso Alegre", state: "MG", country: "Brasil", institution: "Escola Clarisse Toledo", lat: -22.2365, lng: -45.9332 },
+            { city: "Cáceres", state: "MT", country: "Brasil", institution: "Univers. Estad. Mato Grosso UEMG", lat: -16.0764, lng: -57.6818 },
+            { city: "Lucas do Rio Verde", state: "MT", country: "Brasil", institution: "União Faculds de Mato Grosso", lat: -13.0576, lng: -55.9095 },
+            { city: "Belém", state: "PA", country: "Brasil", institution: "Instituto Tecnológico Vale – ITV", lat: -1.4557, lng: -48.5024 },
+            { city: "Cajazeiras", state: "PB", country: "Brasil", institution: "Centro Universit. Sta Maria", lat: -6.8866, lng: -38.5577 },
+            { city: "Campina Grande", state: "PB", country: "Brasil", institution: "Univers. Fed. Campina Grande", lat: -7.2290, lng: -35.8811 },
+            { city: "João Pessoa", state: "PB", country: "Brasil", institution: "Instit. Polícia Científica Estad. Paraíba", lat: -7.1195, lng: -34.8450 },
+            { city: "Picuí", state: "PB", country: "Brasil", institution: "Instituto Fed. da Paraíba IFPB", lat: -6.5138, lng: -36.3491 },
+            { city: "Abreu e Lima", state: "PE", country: "Brasil", institution: "IFPE Campus Abreu e Lima", lat: -7.9075, lng: -34.8983 },
+            { city: "Caruaru", state: "PE", country: "Brasil", institution: "UFPE e FIOCRUZ", lat: -8.2833, lng: -35.9769 },
+            { city: "Cumaru", state: "PE", country: "Brasil", institution: "Secret. Educação e Esp. PE", lat: -8.0082, lng: -35.6958 },
+            { city: "Floresta", state: "PE", country: "Brasil", institution: "IFPE Inst. Fed. Sertão – Floresta", lat: -8.5985, lng: -38.5686 },
+            { city: "Garanhuns", state: "PE", country: "Brasil", institution: "Instituto Fed. PE – IFPE Garanhuns", lat: -8.8828, lng: -36.4969 },
+            { city: "Goiana", state: "PE", country: "Brasil", institution: "Secret. Educ. PE", lat: -7.5600, lng: -35.0074 },
+            { city: "Itapissuma", state: "PE", country: "Brasil", institution: "Estado de Pernambuco", lat: -7.7680, lng: -34.8941 },
+            { city: "Jaboatão dos Guararapes", state: "PE", country: "Brasil", institution: "Prefeitura de Jaboatão - PE", lat: -8.1130, lng: -35.0153 },
+            { city: "Petrolina", state: "PE", country: "Brasil", institution: "Escola São José", lat: -9.3886, lng: -40.5027 },
+            { city: "Recife", state: "PE", country: "Brasil", institution: "UFPE", lat: -8.0476, lng: -34.8770 },
+            { city: "Serra Talhada", state: "PE", country: "Brasil", institution: "UFRPE", lat: -7.9819, lng: -38.2919 },
+            { city: "Floriano", state: "PI", country: "Brasil", institution: "Univers. Fed. do Piauí", lat: -6.7676, lng: -43.0240 },
+            { city: "Curitiba", state: "PR", country: "Brasil", institution: "FIOCRUZ Paraná – Inst. Carlos Chagas", lat: -25.4290, lng: -49.2671 },
+            { city: "Rio de janeiro", state: "RJ", country: "Brasil", institution: "Bio-Manguinhos/FIOCRUZ-RJ", lat: -22.9068, lng: -43.1729 },
+            { city: "Natal", state: "RN", country: "Brasil", institution: "Empresa Brasileira Servs Hosp", lat: -5.7945, lng: -35.2120 },
+            { city: "Santa Cruz", state: "RN", country: "Brasil", institution: "IFRN - Campus Santa Cruz", lat: -6.2252, lng: -36.0224 },
+            { city: "Florianópolis", state: "SC", country: "Brasil", institution: "Symbiomics Microbiome Solutions Ltda", lat: -27.5969, lng: -48.5495 },
+            { city: "Campinas", state: "SP", country: "Brasil", institution: "Healthbit", lat: -22.9071, lng: -47.0632 },
+            { city: "Ribeirão Preto", state: "SP", country: "Brasil", institution: "Onkos Diagnósticos Moleculares", lat: -21.1704, lng: -47.8103 },
+            { city: "São Paulo", state: "SP", country: "Brasil", institution: "Hospital Albert Einstein", lat: -23.5505, lng: -46.6333 }
+        ];
+
+        // Add markers to the map
+        const markers = [];
+        const markersByCountry = {};
+
+        locations.forEach(location => {
+            // Create marker and add to map
+            const marker = L.marker([location.lat, location.lng], {
+                icon: createIcon(location.country)
+            }).addTo(map);
+            
+            // Create popup with location information
+            const popupContent = `
+                <strong>${location.institution}</strong><br>
+                ${location.city}${location.state ? `, ${location.state}` : ''}<br>
+                ${location.country}
+            `;
+            marker.bindPopup(popupContent);
+            
+            markers.push(marker);
+            
+            // Group markers by country for the legend
+            if (!markersByCountry[location.country]) {
+                markersByCountry[location.country] = [];
+            }
+            markersByCountry[location.country].push(marker);
+        });
+
+        // Add legend
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'info-box legend');
+            div.innerHTML = '<h4>Instituições por País</h4>';
+            
+            // Add legend items
+            const countries = Object.keys(markersByCountry).sort();
+            countries.forEach(country => {
+                div.innerHTML += `
+                    <div><i style="background:${getMarkerColor(country)}"></i>
+                    ${country} (${markersByCountry[country].length})</div>`;
+            });
+            
+            return div;
+        };
+        legend.addTo(map);
+
+        // Add info box
+        const info = L.control({position: 'topright'});
+        info.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'info-box');
+            div.innerHTML = `
+                <h4>Destino e Atuações dos Egressos</h4>
+                <p>Programa de PG em Genética e Biologia Molecular - UFPE</p>
+                <p>Total de Instituições: ${markers.length}</p>
+            `;
+            return div;
+        };
+        info.addTo(map);
+
+        // Fit map to show all markers
+        const bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
+        map.fitBounds(bounds);
+    </script>
+</body>
+</html>
